@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>English Pocket Coach</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero-panel" aria-label="Today practice">
+        <div class="brand-row">
+          <div class="mascot" aria-hidden="true">
+            <svg viewBox="0 0 120 120" role="img">
+              <rect x="22" y="32" width="76" height="56" rx="14" fill="#fff6cf" stroke="#533d29" stroke-width="5"/>
+              <rect x="30" y="40" width="60" height="36" rx="8" fill="#fffcef"/>
+              <circle cx="47" cy="61" r="5" fill="#2d2b31"/>
+              <circle cx="74" cy="61" r="5" fill="#2d2b31"/>
+              <path d="M54 72c6 4 13 4 19 0" fill="none" stroke="#d26b6b" stroke-width="4" stroke-linecap="round"/>
+              <path d="M61 30c-2-12 3-19 13-22" fill="none" stroke="#5f7f38" stroke-width="5" stroke-linecap="round"/>
+              <ellipse cx="79" cy="8" rx="15" ry="8" fill="#8fb84f" transform="rotate(-22 79 8)"/>
+              <rect x="44" y="87" width="32" height="14" rx="6" fill="#6d543a"/>
+              <path d="M40 96h40" stroke="#533d29" stroke-width="5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <p class="eyebrow">For Japanese speakers</p>
+            <h1>English Pocket Coach</h1>
+          </div>
+        </div>
+        <div class="today-card">
+          <p class="label">Today's line</p>
+          <h2 id="phraseText">Loading...</h2>
+          <p id="phraseJa" class="japanese"></p>
+          <p id="phraseTip" class="tip"></p>
+          <div class="action-row">
+            <button id="speakBtn" class="icon-button" title="Listen">
+              <span aria-hidden="true">▶</span>
+              Listen
+            </button>
+            <button id="nextBtn" class="ghost-button">Next phrase</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="practice-grid" aria-label="Practice tools">
+        <article class="tool-panel">
+          <div class="panel-head">
+            <div>
+              <p class="label">Quiz</p>
+              <h2>Choose the natural English</h2>
+            </div>
+            <span id="scoreBadge" class="badge">0 correct</span>
+          </div>
+          <p id="quizPrompt" class="question"></p>
+          <div id="quizOptions" class="option-list"></div>
+          <p id="quizFeedback" class="feedback" aria-live="polite"></p>
+        </article>
+
+        <article class="tool-panel">
+          <div class="panel-head">
+            <div>
+              <p class="label">Shadowing</p>
+              <h2>Repeat out loud</h2>
+            </div>
+            <button id="slowBtn" class="small-button">Slow</button>
+          </div>
+          <p id="shadowText" class="shadow-line"></p>
+          <p id="shadowJa" class="japanese"></p>
+          <div class="meter" aria-label="Practice meter">
+            <span id="meterFill"></span>
+          </div>
+          <button id="doneBtn" class="primary-button">I practiced this</button>
+        </article>
+
+        <article class="tool-panel wide conversation-panel">
+          <div class="panel-head">
+            <div>
+              <p class="label">Conversation</p>
+              <h2>Practice real situations</h2>
+            </div>
+            <button id="conversationNextBtn" class="small-button">New scene</button>
+          </div>
+          <div class="conversation-layout">
+            <div class="scene-box">
+              <p id="sceneName" class="scene-name"></p>
+              <p id="sceneHint" class="japanese"></p>
+              <div class="dialogue">
+                <p><strong>Partner</strong></p>
+                <p id="partnerLine" class="partner-line"></p>
+              </div>
+            </div>
+            <div>
+              <p class="label">Choose your answer</p>
+              <div id="conversationOptions" class="option-list"></div>
+              <p id="conversationFeedback" class="feedback" aria-live="polite"></p>
+            </div>
+          </div>
+        </article>
+
+        <article class="tool-panel wide">
+          <div class="panel-head">
+            <div>
+              <p class="label">Japanese trouble spots</p>
+              <h2>Fix common mistakes</h2>
+            </div>
+          </div>
+          <div class="mistake-list" id="mistakeList"></div>
+        </article>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
