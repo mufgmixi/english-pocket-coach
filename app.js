@@ -206,6 +206,10 @@ const conversationFeedback = document.querySelector("#conversationFeedback");
 const freeTalkInput = document.querySelector("#freeTalkInput");
 const freeTalkEnglish = document.querySelector("#freeTalkEnglish");
 const freeTalkLesson = document.querySelector("#freeTalkLesson");
+const voiceStatus = document.querySelector("#voiceStatus");
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition;
 
 function currentPhrase() {
   return phrases[phraseIndex % phrases.length];
@@ -336,6 +340,56 @@ function buildFreeTalk() {
   localStorage.setItem("freeTalkInput", text);
 }
 
+function startVoiceInput() {
+  if (!SpeechRecognition) {
+    voiceStatus.textContent = "Voice input is not supported in this browser. Try Chrome or Edge.";
+    return;
+  }
+
+  if (!recognition) {
+    recognition = new SpeechRecognition();
+    recognition.lang = "ja-JP";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
+    recognition.addEventListener("result", (event) => {
+      const transcript = Array.from(event.results)
+        .map((result) => result[0].transcript)
+        .join("");
+      freeTalkInput.value = transcript;
+      voiceStatus.textContent = event.results[event.results.length - 1].isFinal
+        ? "Voice captured. Press Translate and teach."
+        : "Listening...";
+    });
+
+    recognition.addEventListener("error", () => {
+      voiceStatus.textContent = "Voice input stopped. Check microphone permission.";
+    });
+
+    recognition.addEventListener("end", () => {
+      if (freeTalkInput.value.trim()) {
+        voiceStatus.textContent = "Voice captured. Press Translate and teach.";
+      }
+    });
+  }
+
+  voiceStatus.textContent = "Listening... speak Japanese now.";
+  recognition.start();
+}
+
+function copyCoachPrompt() {
+  const text = freeTalkInput.value.trim();
+  const prompt = `日本語: ${text || "ここに日本語を書きます"}\nPlease translate this into natural English, explain the grammar in easy Japanese, and give me one short reply question for conversation practice.`;
+  navigator.clipboard.writeText(prompt).then(
+    () => {
+      voiceStatus.textContent = "Copied. Paste it into Codex or ChatGPT to practice with AI.";
+    },
+    () => {
+      voiceStatus.textContent = prompt;
+    }
+  );
+}
+
 document.querySelector("#speakBtn").addEventListener("click", () => speak(currentPhrase().en));
 document.querySelector("#slowBtn").addEventListener("click", () => speak(currentPhrase().en, 0.68));
 document.querySelector("#nextBtn").addEventListener("click", () => {
@@ -356,10 +410,13 @@ document.querySelector("#freeTalkBtn").addEventListener("click", buildFreeTalk);
 document.querySelector("#freeTalkSpeakBtn").addEventListener("click", () => {
   speak(freeTalkEnglish.textContent, 0.86);
 });
+document.querySelector("#voiceInputBtn").addEventListener("click", startVoiceInput);
+document.querySelector("#copyCoachPromptBtn").addEventListener("click", copyCoachPrompt);
 document.querySelector("#freeTalkClearBtn").addEventListener("click", () => {
   freeTalkInput.value = "";
   freeTalkEnglish.textContent = "Type Japanese, then press Translate.";
   freeTalkLesson.textContent = "";
+  voiceStatus.textContent = "";
   localStorage.removeItem("freeTalkInput");
 });
 

@@ -330,6 +330,19 @@ textarea:focus {
   justify-content: flex-start;
 }
 
+.voice-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.voice-status {
+  margin: 12px 0 0;
+  min-height: 24px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
 .mistake {
   border: 1px solid var(--line);
   border-radius: 8px;

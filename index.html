@@ -104,7 +104,10 @@
               <p class="label">Free talk helper</p>
               <h2>Write Japanese, practice English</h2>
             </div>
-            <button id="freeTalkSpeakBtn" class="small-button">Listen</button>
+            <div class="voice-actions">
+              <button id="voiceInputBtn" class="small-button">Voice input</button>
+              <button id="freeTalkSpeakBtn" class="small-button">Listen</button>
+            </div>
           </div>
           <div class="free-talk-layout">
             <label class="input-block">
@@ -119,8 +122,10 @@
           </div>
           <div class="action-row free-talk-actions">
             <button id="freeTalkBtn" class="primary-button">Translate and teach</button>
+            <button id="copyCoachPromptBtn" class="ghost-button">Copy for AI chat</button>
             <button id="freeTalkClearBtn" class="ghost-button">Clear</button>
           </div>
+          <p id="voiceStatus" class="voice-status" aria-live="polite"></p>
         </article>
 
         <article class="tool-panel wide">
