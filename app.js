@@ -138,6 +138,49 @@ const conversations = [
   }
 ];
 
+const freeTalkPatterns = [
+  {
+    keys: ["疲れ", "つかれ"],
+    en: "I'm tired today, but I still want to study English a little.",
+    lesson: "疲れたは I'm tired. 「でも少し勉強したい」は but I still want to study a little が自然です。"
+  },
+  {
+    keys: ["仕事", "しごと"],
+    en: "Work was busy today, so I feel a little tired.",
+    lesson: "仕事が忙しかったは Work was busy. busy は人にも仕事にも使えます。"
+  },
+  {
+    keys: ["英語", "勉強"],
+    en: "I want to improve my English little by little.",
+    lesson: "上達したいは improve. little by little は「少しずつ」です。"
+  },
+  {
+    keys: ["わから", "分から", "難し"],
+    en: "English is difficult for me, but I want to keep trying.",
+    lesson: "「私には難しい」は difficult for me. keep trying は「挑戦し続ける」です。"
+  },
+  {
+    keys: ["ご飯", "食べ", "ラーメン", "寿司"],
+    en: "I had a good meal today. It made me happy.",
+    lesson: "食べたは I had... が自然なことが多いです。I ate もOKですが I had lunch のようによく言います。"
+  },
+  {
+    keys: ["眠", "寝"],
+    en: "I'm sleepy, so I will practice just one sentence today.",
+    lesson: "眠いは I'm sleepy. 「1文だけ」は just one sentence と言えます。"
+  },
+  {
+    keys: ["嬉し", "楽しか", "楽しい"],
+    en: "I had a good day. I felt happy about it.",
+    lesson: "嬉しかったは I felt happy. 楽しかったは I had fun も使えます。"
+  },
+  {
+    keys: ["ありがとう", "助か"],
+    en: "Thank you. That really helps me.",
+    lesson: "助かりますは That helps me. 強調すると That really helps me. です。"
+  }
+];
+
 let phraseIndex = Number(localStorage.getItem("phraseIndex") || 0);
 let quizIndex = Number(localStorage.getItem("quizIndex") || 0);
 let correctCount = Number(localStorage.getItem("correctCount") || 0);
@@ -160,6 +203,9 @@ const sceneHint = document.querySelector("#sceneHint");
 const partnerLine = document.querySelector("#partnerLine");
 const conversationOptions = document.querySelector("#conversationOptions");
 const conversationFeedback = document.querySelector("#conversationFeedback");
+const freeTalkInput = document.querySelector("#freeTalkInput");
+const freeTalkEnglish = document.querySelector("#freeTalkEnglish");
+const freeTalkLesson = document.querySelector("#freeTalkLesson");
 
 function currentPhrase() {
   return phrases[phraseIndex % phrases.length];
@@ -266,6 +312,30 @@ function chooseConversation(option, item) {
   }
 }
 
+function buildFreeTalk() {
+  const text = freeTalkInput.value.trim();
+  if (!text) {
+    freeTalkEnglish.textContent = "Type Japanese, then press Translate.";
+    freeTalkLesson.textContent = "";
+    return;
+  }
+
+  const matches = freeTalkPatterns.filter((pattern) =>
+    pattern.keys.some((key) => text.includes(key))
+  );
+
+  if (matches.length === 0) {
+    freeTalkEnglish.textContent = "I want to say this in English, but I need a little help.";
+    freeTalkLesson.textContent = "まだこのアプリの簡単辞書にない内容です。ChatGPT/Codexに日本語で送ると、自然な英語に直して練習できます。";
+    return;
+  }
+
+  const main = matches[0];
+  freeTalkEnglish.textContent = main.en;
+  freeTalkLesson.textContent = main.lesson;
+  localStorage.setItem("freeTalkInput", text);
+}
+
 document.querySelector("#speakBtn").addEventListener("click", () => speak(currentPhrase().en));
 document.querySelector("#slowBtn").addEventListener("click", () => speak(currentPhrase().en, 0.68));
 document.querySelector("#nextBtn").addEventListener("click", () => {
@@ -282,9 +352,23 @@ document.querySelector("#conversationNextBtn").addEventListener("click", () => {
   conversationIndex += 1;
   renderConversation();
 });
+document.querySelector("#freeTalkBtn").addEventListener("click", buildFreeTalk);
+document.querySelector("#freeTalkSpeakBtn").addEventListener("click", () => {
+  speak(freeTalkEnglish.textContent, 0.86);
+});
+document.querySelector("#freeTalkClearBtn").addEventListener("click", () => {
+  freeTalkInput.value = "";
+  freeTalkEnglish.textContent = "Type Japanese, then press Translate.";
+  freeTalkLesson.textContent = "";
+  localStorage.removeItem("freeTalkInput");
+});
 
 renderPhrase();
 renderQuiz();
 renderMistakes();
 renderConversation();
+freeTalkInput.value = localStorage.getItem("freeTalkInput") || "";
+if (freeTalkInput.value) {
+  buildFreeTalk();
+}
 updateProgress();
