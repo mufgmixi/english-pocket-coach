@@ -218,6 +218,7 @@ let aiConversation = JSON.parse(localStorage.getItem("aiConversation") || "[]");
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition;
+let isListening = false;
 const defaultAiApiBaseUrl = "https://english-pocket-coach.bonfirelit428.workers.dev";
 
 function currentPhrase() {
@@ -355,6 +356,14 @@ function startVoiceInput() {
     return;
   }
 
+  const voiceButton = document.querySelector("#voiceInputBtn");
+
+  if (isListening && recognition) {
+    recognition.stop();
+    voiceStatus.textContent = "Voice stopped. Sending to AI coach...";
+    return;
+  }
+
   if (!recognition) {
     recognition = new SpeechRecognition();
     recognition.lang = "ja-JP";
@@ -366,22 +375,32 @@ function startVoiceInput() {
         .map((result) => result[0].transcript)
         .join("");
       freeTalkInput.value = transcript;
+      aiCoachInput.value = transcript;
       voiceStatus.textContent = event.results[event.results.length - 1].isFinal
-        ? "Voice captured. Press Translate and teach."
+        ? "Voice captured. Sending to AI coach..."
         : "Listening...";
     });
 
     recognition.addEventListener("error", () => {
+      isListening = false;
+      voiceButton.textContent = "Voice input";
       voiceStatus.textContent = "Voice input stopped. Check microphone permission.";
     });
 
     recognition.addEventListener("end", () => {
+      isListening = false;
+      voiceButton.textContent = "Voice input";
       if (freeTalkInput.value.trim()) {
-        voiceStatus.textContent = "Voice captured. Press Translate and teach.";
+        voiceStatus.textContent = "Voice captured. Sending to AI coach...";
+        sendToAiCoach();
       }
     });
   }
 
+  isListening = true;
+  voiceButton.textContent = "Stop";
+  freeTalkInput.value = "";
+  aiCoachInput.value = "";
   voiceStatus.textContent = "Listening... speak Japanese now.";
   recognition.start();
 }
