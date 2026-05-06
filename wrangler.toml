@@ -2,6 +2,3 @@ name = "english-pocket-coach"
 main = "cloudflare-worker.js"
 compatibility_date = "2026-05-06"
 workers_dev = true
-
-[secrets]
-required = [ "OPENAI_API_KEY" ]

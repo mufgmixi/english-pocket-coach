@@ -81,3 +81,12 @@ If the secret is missing or you need to replace it:
 ```
 
 Wrangler uses `wrangler.toml` for the Worker name, entry file, compatibility date, and required secret.
+
+In non-interactive environments, Wrangler needs a Cloudflare API token:
+
+```powershell
+$env:CLOUDFLARE_API_TOKEN="your_cloudflare_api_token"
+.\deploy-cloudflare.ps1
+```
+
+The token should have permission to edit Workers for this account. Do not commit the token.
