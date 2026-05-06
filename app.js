@@ -218,6 +218,7 @@ let aiConversation = JSON.parse(localStorage.getItem("aiConversation") || "[]");
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition;
+const defaultAiApiBaseUrl = "https://english-pocket-coach.bonfirelit428.workers.dev";
 
 function currentPhrase() {
   return phrases[phraseIndex % phrases.length];
@@ -504,7 +505,7 @@ freeTalkInput.value = localStorage.getItem("freeTalkInput") || "";
 if (freeTalkInput.value) {
   buildFreeTalk();
 }
-aiApiBaseUrl.value = localStorage.getItem("aiApiBaseUrl") || "";
+aiApiBaseUrl.value = localStorage.getItem("aiApiBaseUrl") || defaultAiApiBaseUrl;
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }
