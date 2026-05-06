@@ -225,9 +225,6 @@ let recognition;
 let isListening = false;
 let finalVoiceTranscript = "";
 let interimVoiceTranscript = "";
-let micStream;
-let audioContext;
-let analyser;
 let voiceAnimationId;
 const defaultAiApiBaseUrl = "https://english-pocket-coach.bonfirelit428.workers.dev";
 
@@ -381,32 +378,12 @@ function updateVoiceBars(level = 0) {
 }
 
 async function startMicMeter() {
-  if (!navigator.mediaDevices?.getUserMedia) {
-    setVoiceMonitor("listening", "Listening. Live mic level is not supported in this browser.");
-    updateVoiceBars(0.35);
-    return;
-  }
-
-  try {
-    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    analyser = audioContext.createAnalyser();
-    analyser.fftSize = 512;
-    const source = audioContext.createMediaStreamSource(micStream);
-    source.connect(analyser);
-    const data = new Uint8Array(analyser.frequencyBinCount);
-
-    const tick = () => {
-      analyser.getByteFrequencyData(data);
-      const average = data.reduce((sum, value) => sum + value, 0) / data.length;
-      updateVoiceBars(Math.min(1, average / 72));
-      voiceAnimationId = requestAnimationFrame(tick);
-    };
-    tick();
-  } catch {
-    setVoiceMonitor("listening", "Listening. Microphone level permission was not available.");
-    updateVoiceBars(0.35);
-  }
+  const tick = () => {
+    const level = 0.35 + Math.sin(Date.now() / 180) * 0.18 + Math.random() * 0.2;
+    updateVoiceBars(Math.max(0.18, Math.min(0.8, level)));
+    voiceAnimationId = requestAnimationFrame(tick);
+  };
+  tick();
 }
 
 function stopMicMeter() {
@@ -414,15 +391,6 @@ function stopMicMeter() {
     cancelAnimationFrame(voiceAnimationId);
     voiceAnimationId = undefined;
   }
-  if (micStream) {
-    micStream.getTracks().forEach((track) => track.stop());
-    micStream = undefined;
-  }
-  if (audioContext) {
-    audioContext.close().catch(() => {});
-    audioContext = undefined;
-  }
-  analyser = undefined;
   updateVoiceBars(0);
 }
 
@@ -451,7 +419,7 @@ function startVoiceInput() {
 
   if (!recognition) {
     recognition = new SpeechRecognition();
-    recognition.lang = navigator.language?.startsWith("ja") ? "ja-JP" : "en-US";
+    recognition.lang = "ja-JP";
     recognition.interimResults = true;
     recognition.continuous = false;
 
