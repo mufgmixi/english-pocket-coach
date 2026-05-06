@@ -223,6 +223,8 @@ let aiConversation = JSON.parse(localStorage.getItem("aiConversation") || "[]");
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition;
 let isListening = false;
+let finalVoiceTranscript = "";
+let interimVoiceTranscript = "";
 let micStream;
 let audioContext;
 let analyser;
@@ -439,37 +441,63 @@ function startVoiceInput() {
     return;
   }
 
+  finalVoiceTranscript = "";
+  interimVoiceTranscript = "";
+
+  if (recognition) {
+    recognition.abort();
+    recognition = undefined;
+  }
+
   if (!recognition) {
     recognition = new SpeechRecognition();
-    recognition.lang = "ja-JP";
+    recognition.lang = navigator.language?.startsWith("ja") ? "ja-JP" : "en-US";
     recognition.interimResults = true;
     recognition.continuous = false;
 
     recognition.addEventListener("result", (event) => {
-      const transcript = Array.from(event.results)
-        .map((result) => result[0].transcript)
-        .join("");
+      interimVoiceTranscript = "";
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        const result = event.results[index];
+        if (result.isFinal) {
+          finalVoiceTranscript += result[0].transcript;
+        } else {
+          interimVoiceTranscript += result[0].transcript;
+        }
+      }
+      const transcript = `${finalVoiceTranscript} ${interimVoiceTranscript}`.trim();
       freeTalkInput.value = transcript;
       aiCoachInput.value = transcript;
       voiceTranscriptPreview.textContent = transcript || "Listening...";
-      voiceStatus.textContent = event.results[event.results.length - 1].isFinal
+      voiceStatus.textContent = finalVoiceTranscript
         ? "Voice captured. Sending to AI coach..."
         : "Listening...";
     });
 
-    recognition.addEventListener("error", () => {
+    recognition.addEventListener("error", (event) => {
       isListening = false;
       voiceButton.textContent = "Voice input";
       stopMicMeter();
-      setVoiceMonitor("idle", "Voice input stopped. Check microphone permission.");
-      voiceStatus.textContent = "Voice input stopped. Check microphone permission.";
+      const messageByError = {
+        "no-speech": "No speech was recognized. Try speaking closer to the microphone.",
+        "audio-capture": "Microphone was not available. Check browser microphone permission.",
+        "not-allowed": "Microphone or speech recognition permission was blocked.",
+        "network": "Speech recognition network error. Try Chrome/Edge and check connection.",
+        "language-not-supported": "This speech language is not supported in this browser."
+      };
+      const message = messageByError[event.error] || `Voice input stopped: ${event.error || "unknown error"}`;
+      setVoiceMonitor("idle", message);
+      voiceStatus.textContent = message;
     });
 
     recognition.addEventListener("end", () => {
       isListening = false;
       voiceButton.textContent = "Voice input";
       stopMicMeter();
-      if (freeTalkInput.value.trim()) {
+      const transcript = `${finalVoiceTranscript} ${interimVoiceTranscript}`.trim() || freeTalkInput.value.trim();
+      if (transcript) {
+        freeTalkInput.value = transcript;
+        aiCoachInput.value = transcript;
         voiceStatus.textContent = "Voice captured. Sending to AI coach...";
         setVoiceMonitor("sending", "Voice captured. Sending to AI coach...");
         sendToAiCoach();
@@ -484,9 +512,17 @@ function startVoiceInput() {
   freeTalkInput.value = "";
   aiCoachInput.value = "";
   setVoiceMonitor("listening", "Listening... speak now.");
-  voiceStatus.textContent = "Listening... speak Japanese now.";
+  voiceStatus.textContent = `Listening... speech language: ${recognition.lang}`;
   startMicMeter();
-  recognition.start();
+  try {
+    recognition.start();
+  } catch {
+    isListening = false;
+    voiceButton.textContent = "Voice input";
+    stopMicMeter();
+    setVoiceMonitor("idle", "Voice input could not start. Try tapping again.");
+    voiceStatus.textContent = "Voice input could not start. Try tapping again.";
+  }
 }
 
 function copyCoachPrompt() {
