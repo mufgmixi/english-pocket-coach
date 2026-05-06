@@ -401,13 +401,17 @@ function copyCoachPrompt() {
 
 function renderAiCoach(data) {
   aiCoachReply.textContent = data.english || "No English reply yet.";
-  aiCoachLesson.textContent = data.lesson_ja || "";
+  const details = [];
+  if (data.lesson_ja) {
+    details.push(data.lesson_ja);
+  }
   if (data.word_help) {
-    aiCoachLesson.textContent += `${aiCoachLesson.textContent ? "\n\n" : ""}Word help: ${data.word_help}`;
+    details.push(`Word help: ${data.word_help}`);
   }
   if (data.follow_up_question) {
-    aiCoachLesson.textContent += `${aiCoachLesson.textContent ? "\n\n" : ""}Question: ${data.follow_up_question}`;
+    details.push(`Next question: ${data.follow_up_question}`);
   }
+  aiCoachLesson.textContent = details.join("\n\n");
 }
 
 async function sendToAiCoach() {
