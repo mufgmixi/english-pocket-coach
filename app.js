@@ -207,6 +207,10 @@ const freeTalkInput = document.querySelector("#freeTalkInput");
 const freeTalkEnglish = document.querySelector("#freeTalkEnglish");
 const freeTalkLesson = document.querySelector("#freeTalkLesson");
 const voiceStatus = document.querySelector("#voiceStatus");
+const voiceMonitor = document.querySelector("#voiceMonitor");
+const voiceMonitorTitle = document.querySelector("#voiceMonitorTitle");
+const voiceTranscriptPreview = document.querySelector("#voiceTranscriptPreview");
+const voiceBarElements = Array.from(document.querySelectorAll("#voiceBars span"));
 const aiCoachInput = document.querySelector("#aiCoachInput");
 const aiCoachReply = document.querySelector("#aiCoachReply");
 const aiCoachLesson = document.querySelector("#aiCoachLesson");
@@ -219,6 +223,10 @@ let aiConversation = JSON.parse(localStorage.getItem("aiConversation") || "[]");
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition;
 let isListening = false;
+let micStream;
+let audioContext;
+let analyser;
+let voiceAnimationId;
 const defaultAiApiBaseUrl = "https://english-pocket-coach.bonfirelit428.workers.dev";
 
 function currentPhrase() {
@@ -350,6 +358,72 @@ function buildFreeTalk() {
   localStorage.setItem("freeTalkInput", text);
 }
 
+function setVoiceMonitor(state, message) {
+  voiceMonitor.classList.toggle("is-listening", state === "listening");
+  voiceMonitorTitle.textContent = state === "listening"
+    ? "Listening"
+    : state === "sending"
+      ? "Sending"
+      : "Mic idle";
+  if (message) {
+    voiceTranscriptPreview.textContent = message;
+  }
+}
+
+function updateVoiceBars(level = 0) {
+  voiceBarElements.forEach((bar, index) => {
+    const wave = Math.sin((Date.now() / 120) + index) * 0.22 + 0.78;
+    const height = Math.max(7, Math.min(38, 8 + level * 52 * wave));
+    bar.style.height = `${height}px`;
+  });
+}
+
+async function startMicMeter() {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    setVoiceMonitor("listening", "Listening. Live mic level is not supported in this browser.");
+    updateVoiceBars(0.35);
+    return;
+  }
+
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 512;
+    const source = audioContext.createMediaStreamSource(micStream);
+    source.connect(analyser);
+    const data = new Uint8Array(analyser.frequencyBinCount);
+
+    const tick = () => {
+      analyser.getByteFrequencyData(data);
+      const average = data.reduce((sum, value) => sum + value, 0) / data.length;
+      updateVoiceBars(Math.min(1, average / 72));
+      voiceAnimationId = requestAnimationFrame(tick);
+    };
+    tick();
+  } catch {
+    setVoiceMonitor("listening", "Listening. Microphone level permission was not available.");
+    updateVoiceBars(0.35);
+  }
+}
+
+function stopMicMeter() {
+  if (voiceAnimationId) {
+    cancelAnimationFrame(voiceAnimationId);
+    voiceAnimationId = undefined;
+  }
+  if (micStream) {
+    micStream.getTracks().forEach((track) => track.stop());
+    micStream = undefined;
+  }
+  if (audioContext) {
+    audioContext.close().catch(() => {});
+    audioContext = undefined;
+  }
+  analyser = undefined;
+  updateVoiceBars(0);
+}
+
 function startVoiceInput() {
   if (!SpeechRecognition) {
     voiceStatus.textContent = "Voice input is not supported in this browser. Try Chrome or Edge.";
@@ -361,6 +435,7 @@ function startVoiceInput() {
   if (isListening && recognition) {
     recognition.stop();
     voiceStatus.textContent = "Voice stopped. Sending to AI coach...";
+    setVoiceMonitor("sending", "Voice stopped. Sending to AI coach...");
     return;
   }
 
@@ -376,6 +451,7 @@ function startVoiceInput() {
         .join("");
       freeTalkInput.value = transcript;
       aiCoachInput.value = transcript;
+      voiceTranscriptPreview.textContent = transcript || "Listening...";
       voiceStatus.textContent = event.results[event.results.length - 1].isFinal
         ? "Voice captured. Sending to AI coach..."
         : "Listening...";
@@ -384,15 +460,21 @@ function startVoiceInput() {
     recognition.addEventListener("error", () => {
       isListening = false;
       voiceButton.textContent = "Voice input";
+      stopMicMeter();
+      setVoiceMonitor("idle", "Voice input stopped. Check microphone permission.");
       voiceStatus.textContent = "Voice input stopped. Check microphone permission.";
     });
 
     recognition.addEventListener("end", () => {
       isListening = false;
       voiceButton.textContent = "Voice input";
+      stopMicMeter();
       if (freeTalkInput.value.trim()) {
         voiceStatus.textContent = "Voice captured. Sending to AI coach...";
+        setVoiceMonitor("sending", "Voice captured. Sending to AI coach...");
         sendToAiCoach();
+      } else {
+        setVoiceMonitor("idle", "No voice captured. Try again near the microphone.");
       }
     });
   }
@@ -401,7 +483,9 @@ function startVoiceInput() {
   voiceButton.textContent = "Stop";
   freeTalkInput.value = "";
   aiCoachInput.value = "";
+  setVoiceMonitor("listening", "Listening... speak now.");
   voiceStatus.textContent = "Listening... speak Japanese now.";
+  startMicMeter();
   recognition.start();
 }
 
@@ -511,12 +595,14 @@ document.querySelector("#aiCoachClearBtn").addEventListener("click", () => {
   aiCoachReply.textContent = "Use English first. Japanese words are OK when you get stuck.";
   aiCoachLesson.textContent = "";
   aiCoachMeta.textContent = "";
+  setVoiceMonitor("idle", "Tap Voice input and start speaking.");
 });
 document.querySelector("#freeTalkClearBtn").addEventListener("click", () => {
   freeTalkInput.value = "";
   freeTalkEnglish.textContent = "Type Japanese, then press Translate.";
   freeTalkLesson.textContent = "";
   voiceStatus.textContent = "";
+  setVoiceMonitor("idle", "Tap Voice input and start speaking.");
   localStorage.removeItem("freeTalkInput");
 });
 

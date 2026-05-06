@@ -65,3 +65,19 @@ For a low-cost mobile backend, use `cloudflare-worker.js`.
 11. Paste that URL into the app's `AI server URL` field.
 
 Do not put your OpenAI API key into `index.html`, `app.js`, GitHub Pages, or any public file.
+
+## Cloudflare CLI automation
+
+After installing/logging in to Wrangler once, deploy the Worker with:
+
+```powershell
+.\deploy-cloudflare.ps1
+```
+
+If the secret is missing or you need to replace it:
+
+```powershell
+.\set-cloudflare-secret.ps1
+```
+
+Wrangler uses `wrangler.toml` for the Worker name, entry file, compatibility date, and required secret.

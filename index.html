@@ -128,6 +128,23 @@
             <button id="copyCoachPromptBtn" class="ghost-button">Copy for AI chat</button>
             <button id="freeTalkClearBtn" class="ghost-button">Clear</button>
           </div>
+          <div id="voiceMonitor" class="voice-monitor" aria-live="polite">
+            <div class="voice-dot" aria-hidden="true"></div>
+            <div class="voice-monitor-copy">
+              <strong id="voiceMonitorTitle">Mic idle</strong>
+              <span id="voiceTranscriptPreview">Tap Voice input and start speaking.</span>
+            </div>
+            <div id="voiceBars" class="voice-bars" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
           <p id="voiceStatus" class="voice-status" aria-live="polite"></p>
         </article>
 
