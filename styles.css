@@ -306,7 +306,19 @@ textarea {
   line-height: 1.55;
 }
 
-textarea:focus {
+input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #d8ccbd;
+  border-radius: 8px;
+  padding: 0 14px;
+  color: var(--ink);
+  background: #fffdf8;
+  font: inherit;
+}
+
+textarea:focus,
+input:focus {
   outline: 3px solid rgba(56, 111, 157, 0.18);
 }
 
@@ -328,6 +340,10 @@ textarea:focus {
 .free-talk-actions {
   margin-top: 16px;
   justify-content: flex-start;
+}
+
+.api-block {
+  margin-top: 16px;
 }
 
 .voice-actions {

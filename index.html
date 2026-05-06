@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>English Pocket Coach</title>
+    <meta name="theme-color" content="#2f735d">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
@@ -126,6 +129,37 @@
             <button id="freeTalkClearBtn" class="ghost-button">Clear</button>
           </div>
           <p id="voiceStatus" class="voice-status" aria-live="polite"></p>
+        </article>
+
+        <article class="tool-panel wide ai-coach-panel">
+          <div class="panel-head">
+            <div>
+              <p class="label">AI conversation coach</p>
+              <h2>English first, Japanese when stuck</h2>
+            </div>
+            <span id="aiStatusBadge" class="badge">Local AI server needed</span>
+          </div>
+          <div class="free-talk-layout">
+            <label class="input-block">
+              <span>Your message</span>
+              <textarea id="aiCoachInput" rows="4" placeholder="英語メインで書いて、分からない単語だけ日本語でOK。例: I was very 疲れた after work, but I want to practice speaking."></textarea>
+            </label>
+            <div class="coach-output">
+              <p class="label">Coach reply</p>
+              <p id="aiCoachReply" class="generated-line">Use English first. Japanese words are OK when you get stuck.</p>
+              <p id="aiCoachLesson" class="japanese"></p>
+            </div>
+          </div>
+          <label class="input-block api-block">
+            <span>AI server URL</span>
+            <input id="aiApiBaseUrl" type="url" placeholder="例: https://your-ai-coach.example.com">
+          </label>
+          <div class="action-row free-talk-actions">
+            <button id="aiCoachSendBtn" class="primary-button">Send to AI coach</button>
+            <button id="aiCoachListenBtn" class="ghost-button">Listen</button>
+            <button id="aiCoachClearBtn" class="ghost-button">Clear AI chat</button>
+          </div>
+          <p id="aiCoachMeta" class="voice-status" aria-live="polite"></p>
         </article>
 
         <article class="tool-panel wide">

@@ -1,0 +1,18 @@
+{
+  "name": "English Pocket Coach",
+  "short_name": "English Coach",
+  "description": "English-first conversation practice for Japanese speakers.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fffaf1",
+  "theme_color": "#2f735d",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

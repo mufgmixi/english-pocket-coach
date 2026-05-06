@@ -207,6 +207,14 @@ const freeTalkInput = document.querySelector("#freeTalkInput");
 const freeTalkEnglish = document.querySelector("#freeTalkEnglish");
 const freeTalkLesson = document.querySelector("#freeTalkLesson");
 const voiceStatus = document.querySelector("#voiceStatus");
+const aiCoachInput = document.querySelector("#aiCoachInput");
+const aiCoachReply = document.querySelector("#aiCoachReply");
+const aiCoachLesson = document.querySelector("#aiCoachLesson");
+const aiCoachMeta = document.querySelector("#aiCoachMeta");
+const aiStatusBadge = document.querySelector("#aiStatusBadge");
+const aiApiBaseUrl = document.querySelector("#aiApiBaseUrl");
+
+let aiConversation = JSON.parse(localStorage.getItem("aiConversation") || "[]");
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition;
@@ -390,6 +398,62 @@ function copyCoachPrompt() {
   );
 }
 
+function renderAiCoach(data) {
+  aiCoachReply.textContent = data.english || "No English reply yet.";
+  aiCoachLesson.textContent = data.lesson_ja || "";
+  if (data.word_help) {
+    aiCoachLesson.textContent += `${aiCoachLesson.textContent ? "\n\n" : ""}Word help: ${data.word_help}`;
+  }
+  if (data.follow_up_question) {
+    aiCoachLesson.textContent += `${aiCoachLesson.textContent ? "\n\n" : ""}Question: ${data.follow_up_question}`;
+  }
+}
+
+async function sendToAiCoach() {
+  const message = aiCoachInput.value.trim();
+  if (!message) {
+    aiCoachMeta.textContent = "Type or voice-input a message first.";
+    return;
+  }
+
+  aiCoachMeta.textContent = "Asking AI coach...";
+  aiStatusBadge.textContent = "Connecting";
+
+  try {
+    const baseUrl = aiApiBaseUrl.value.trim().replace(/\/$/, "");
+    localStorage.setItem("aiApiBaseUrl", baseUrl);
+
+    const response = await fetch(`${baseUrl}/api/coach`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message,
+        history: aiConversation.slice(-8)
+      })
+    });
+
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.error || "AI server error");
+    }
+
+    aiConversation.push({ role: "user", content: message });
+    aiConversation.push({ role: "assistant", content: payload.english });
+    localStorage.setItem("aiConversation", JSON.stringify(aiConversation.slice(-12)));
+    renderAiCoach(payload);
+
+    const tokens = payload.usage?.total_tokens ? `${payload.usage.total_tokens} tokens` : "token count unavailable";
+    aiCoachMeta.textContent = `Model: ${payload.model || "unknown"} · ${tokens}`;
+    aiStatusBadge.textContent = "AI ready";
+    speak(payload.english, 0.86);
+  } catch (error) {
+    aiStatusBadge.textContent = "Local AI server needed";
+    aiCoachReply.textContent = "AI mode is not connected yet.";
+    aiCoachLesson.textContent = "GitHub Pages cannot safely store an OpenAI API key. Run the local server in server.js, or deploy a small backend/proxy. Then you can write English with Japanese words mixed in.";
+    aiCoachMeta.textContent = error.message;
+  }
+}
+
 document.querySelector("#speakBtn").addEventListener("click", () => speak(currentPhrase().en));
 document.querySelector("#slowBtn").addEventListener("click", () => speak(currentPhrase().en, 0.68));
 document.querySelector("#nextBtn").addEventListener("click", () => {
@@ -412,6 +476,18 @@ document.querySelector("#freeTalkSpeakBtn").addEventListener("click", () => {
 });
 document.querySelector("#voiceInputBtn").addEventListener("click", startVoiceInput);
 document.querySelector("#copyCoachPromptBtn").addEventListener("click", copyCoachPrompt);
+document.querySelector("#aiCoachSendBtn").addEventListener("click", sendToAiCoach);
+document.querySelector("#aiCoachListenBtn").addEventListener("click", () => {
+  speak(aiCoachReply.textContent, 0.86);
+});
+document.querySelector("#aiCoachClearBtn").addEventListener("click", () => {
+  aiConversation = [];
+  localStorage.removeItem("aiConversation");
+  aiCoachInput.value = "";
+  aiCoachReply.textContent = "Use English first. Japanese words are OK when you get stuck.";
+  aiCoachLesson.textContent = "";
+  aiCoachMeta.textContent = "";
+});
 document.querySelector("#freeTalkClearBtn").addEventListener("click", () => {
   freeTalkInput.value = "";
   freeTalkEnglish.textContent = "Type Japanese, then press Translate.";
@@ -427,5 +503,9 @@ renderConversation();
 freeTalkInput.value = localStorage.getItem("freeTalkInput") || "";
 if (freeTalkInput.value) {
   buildFreeTalk();
+}
+aiApiBaseUrl.value = localStorage.getItem("aiApiBaseUrl") || "";
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
 }
 updateProgress();
