@@ -9,12 +9,17 @@ $files = @(
   "icon.svg",
   "AI_SETUP.md",
   "cloudflare-worker.js",
+  "wrangler.toml",
+  "deploy-cloudflare.ps1",
+  "set-cloudflare-secret.ps1",
+  "deploy.ps1",
   ".gitignore"
 )
 
 git add -- $files
 
-$hasChanges = git diff --cached --quiet; $LASTEXITCODE -ne 0
+git diff --cached --quiet
+$hasChanges = $LASTEXITCODE -ne 0
 if (-not $hasChanges) {
   Write-Host "No deploy changes to commit."
   exit 0
