@@ -227,6 +227,7 @@ let finalVoiceTranscript = "";
 let interimVoiceTranscript = "";
 let voiceAnimationId;
 const defaultAiApiBaseUrl = "https://english-pocket-coach.bonfirelit428.workers.dev";
+let keyboardMicMode = false;
 
 function currentPhrase() {
   return phrases[phraseIndex % phrases.length];
@@ -470,7 +471,9 @@ function startVoiceInput() {
         setVoiceMonitor("sending", "Voice captured. Sending to AI coach...");
         sendToAiCoach();
       } else {
-        setVoiceMonitor("idle", "No voice captured. Try again near the microphone.");
+        const message = "Browser voice did not return text. Try Keyboard mic instead.";
+        setVoiceMonitor("idle", message);
+        voiceStatus.textContent = message;
       }
     });
   }
@@ -491,6 +494,13 @@ function startVoiceInput() {
     setVoiceMonitor("idle", "Voice input could not start. Try tapping again.");
     voiceStatus.textContent = "Voice input could not start. Try tapping again.";
   }
+}
+
+function startKeyboardMicMode() {
+  keyboardMicMode = true;
+  aiCoachInput.focus();
+  setVoiceMonitor("idle", "Use your phone keyboard microphone, then tap Send to AI coach.");
+  voiceStatus.textContent = "Keyboard mic mode: tap the microphone on your phone keyboard.";
 }
 
 function copyCoachPrompt() {
@@ -587,6 +597,7 @@ document.querySelector("#freeTalkSpeakBtn").addEventListener("click", () => {
   speak(freeTalkEnglish.textContent, 0.86);
 });
 document.querySelector("#voiceInputBtn").addEventListener("click", startVoiceInput);
+document.querySelector("#keyboardMicBtn").addEventListener("click", startKeyboardMicMode);
 document.querySelector("#copyCoachPromptBtn").addEventListener("click", copyCoachPrompt);
 document.querySelector("#aiCoachSendBtn").addEventListener("click", sendToAiCoach);
 document.querySelector("#aiCoachListenBtn").addEventListener("click", () => {
@@ -600,6 +611,7 @@ document.querySelector("#aiCoachClearBtn").addEventListener("click", () => {
   aiCoachLesson.textContent = "";
   aiCoachMeta.textContent = "";
   setVoiceMonitor("idle", "Tap Voice input and start speaking.");
+  keyboardMicMode = false;
 });
 document.querySelector("#freeTalkClearBtn").addEventListener("click", () => {
   freeTalkInput.value = "";
@@ -607,6 +619,7 @@ document.querySelector("#freeTalkClearBtn").addEventListener("click", () => {
   freeTalkLesson.textContent = "";
   voiceStatus.textContent = "";
   setVoiceMonitor("idle", "Tap Voice input and start speaking.");
+  keyboardMicMode = false;
   localStorage.removeItem("freeTalkInput");
 });
 
