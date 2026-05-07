@@ -180,6 +180,48 @@
           <p id="aiCoachMeta" class="voice-status" aria-live="polite"></p>
         </article>
 
+        <article class="tool-panel wide chatgpt-helper-panel">
+          <div class="panel-head">
+            <div>
+              <p class="label">ChatGPT voice companion</p>
+              <h2>Prepare, copy, and review</h2>
+            </div>
+            <button id="copyStartPromptBtn" class="small-button">Copy start prompt</button>
+          </div>
+          <div class="helper-grid">
+            <div class="helper-box">
+              <p class="label">Help me say this</p>
+              <textarea id="sayThisInput" rows="3" placeholder="日本語でOK。例: なんとなく今日はやる気が出ない"></textarea>
+              <div class="action-row helper-actions">
+                <button id="copySayThisBtn" class="primary-button">Copy for ChatGPT</button>
+                <button id="clearSayThisBtn" class="ghost-button">Clear</button>
+              </div>
+            </div>
+            <div class="helper-box">
+              <p class="label">Stuck word</p>
+              <div class="stuck-row">
+                <input id="stuckJaInput" type="text" placeholder="日本語: 面倒くさい">
+                <input id="stuckEnInput" type="text" placeholder="English: annoying / too much work">
+              </div>
+              <div class="action-row helper-actions">
+                <button id="saveStuckWordBtn" class="primary-button">Save word</button>
+                <button id="clearStuckWordsBtn" class="ghost-button">Clear words</button>
+              </div>
+            </div>
+          </div>
+          <div class="review-panel">
+            <div class="panel-head">
+              <div>
+                <p class="label">Review</p>
+                <h2>Your stuck words</h2>
+              </div>
+              <button id="copyReviewPromptBtn" class="small-button">Copy review prompt</button>
+            </div>
+            <div id="stuckWordList" class="stuck-list"></div>
+            <p id="helperStatus" class="voice-status" aria-live="polite"></p>
+          </div>
+        </article>
+
         <article class="tool-panel wide">
           <div class="panel-head">
             <div>

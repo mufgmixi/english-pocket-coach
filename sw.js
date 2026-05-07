@@ -1,4 +1,4 @@
-const CACHE_NAME = "english-pocket-coach-v7";
+const CACHE_NAME = "english-pocket-coach-v8";
 const APP_FILES = [
   "./",
   "./index.html",

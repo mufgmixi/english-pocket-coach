@@ -217,8 +217,14 @@ const aiCoachLesson = document.querySelector("#aiCoachLesson");
 const aiCoachMeta = document.querySelector("#aiCoachMeta");
 const aiStatusBadge = document.querySelector("#aiStatusBadge");
 const aiApiBaseUrl = document.querySelector("#aiApiBaseUrl");
+const sayThisInput = document.querySelector("#sayThisInput");
+const stuckJaInput = document.querySelector("#stuckJaInput");
+const stuckEnInput = document.querySelector("#stuckEnInput");
+const stuckWordList = document.querySelector("#stuckWordList");
+const helperStatus = document.querySelector("#helperStatus");
 
 let aiConversation = JSON.parse(localStorage.getItem("aiConversation") || "[]");
+let stuckWords = JSON.parse(localStorage.getItem("stuckWords") || "[]");
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition;
@@ -516,6 +522,84 @@ function copyCoachPrompt() {
   );
 }
 
+function copyText(text, statusElement, successMessage) {
+  navigator.clipboard.writeText(text).then(
+    () => {
+      statusElement.textContent = successMessage;
+    },
+    () => {
+      statusElement.textContent = text;
+    }
+  );
+}
+
+function renderStuckWords() {
+  stuckWordList.innerHTML = "";
+  if (stuckWords.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "japanese";
+    empty.textContent = "No stuck words yet.";
+    stuckWordList.appendChild(empty);
+    return;
+  }
+
+  stuckWords.slice().reverse().forEach((item) => {
+    const card = document.createElement("div");
+    card.className = "stuck-item";
+    card.innerHTML = `<strong>${item.ja}</strong><span>${item.en}</span>`;
+    stuckWordList.appendChild(card);
+  });
+}
+
+function copyStartPrompt() {
+  const prompt = [
+    "I want to practice English conversation.",
+    "I will speak mostly English, but I may use Japanese when I don't know a word.",
+    "Please understand the Japanese word, replace it with natural English, and continue the conversation.",
+    "After each answer, give me:",
+    "1. A natural corrected sentence",
+    "2. One short Japanese explanation",
+    "3. One easy follow-up question in English",
+    "Please keep your replies short."
+  ].join("\n");
+  copyText(prompt, helperStatus, "Start prompt copied. Paste it into ChatGPT voice/text chat.");
+}
+
+function copySayThisPrompt() {
+  const text = sayThisInput.value.trim();
+  const prompt = `Please help me say this naturally in simple English. Give me one sentence I can say aloud, one short Japanese explanation, and one easy follow-up question.\n\nJapanese: ${text || "ここに日本語を書きます"}`;
+  copyText(prompt, helperStatus, "Help prompt copied.");
+}
+
+function saveStuckWord() {
+  const ja = stuckJaInput.value.trim();
+  const en = stuckEnInput.value.trim();
+  if (!ja || !en) {
+    helperStatus.textContent = "Enter both Japanese and English.";
+    return;
+  }
+  stuckWords.push({ ja, en });
+  stuckWords = stuckWords.slice(-30);
+  localStorage.setItem("stuckWords", JSON.stringify(stuckWords));
+  stuckJaInput.value = "";
+  stuckEnInput.value = "";
+  helperStatus.textContent = "Stuck word saved.";
+  renderStuckWords();
+}
+
+function clearStuckWords() {
+  stuckWords = [];
+  localStorage.removeItem("stuckWords");
+  helperStatus.textContent = "Stuck words cleared.";
+  renderStuckWords();
+}
+
+function copyReviewPrompt() {
+  const list = stuckWords.map((item) => `- ${item.ja} = ${item.en}`).join("\n");
+  const prompt = `Please quiz me on these stuck words for English conversation. Ask one question at a time, keep it easy, and correct me briefly in Japanese.\n\n${list || "- No stuck words yet."}`;
+  copyText(prompt, helperStatus, "Review prompt copied.");
+}
+
 function renderAiCoach(data) {
   aiCoachReply.textContent = data.english || "No English reply yet.";
   const details = [];
@@ -599,6 +683,15 @@ document.querySelector("#freeTalkSpeakBtn").addEventListener("click", () => {
 document.querySelector("#voiceInputBtn").addEventListener("click", startVoiceInput);
 document.querySelector("#keyboardMicBtn").addEventListener("click", startKeyboardMicMode);
 document.querySelector("#copyCoachPromptBtn").addEventListener("click", copyCoachPrompt);
+document.querySelector("#copyStartPromptBtn").addEventListener("click", copyStartPrompt);
+document.querySelector("#copySayThisBtn").addEventListener("click", copySayThisPrompt);
+document.querySelector("#clearSayThisBtn").addEventListener("click", () => {
+  sayThisInput.value = "";
+  helperStatus.textContent = "";
+});
+document.querySelector("#saveStuckWordBtn").addEventListener("click", saveStuckWord);
+document.querySelector("#clearStuckWordsBtn").addEventListener("click", clearStuckWords);
+document.querySelector("#copyReviewPromptBtn").addEventListener("click", copyReviewPrompt);
 document.querySelector("#aiCoachSendBtn").addEventListener("click", sendToAiCoach);
 document.querySelector("#aiCoachListenBtn").addEventListener("click", () => {
   speak(aiCoachReply.textContent, 0.86);
@@ -631,6 +724,7 @@ freeTalkInput.value = localStorage.getItem("freeTalkInput") || "";
 if (freeTalkInput.value) {
   buildFreeTalk();
 }
+renderStuckWords();
 aiApiBaseUrl.value = localStorage.getItem("aiApiBaseUrl") || defaultAiApiBaseUrl;
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js").catch(() => {});

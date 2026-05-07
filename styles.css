@@ -342,6 +342,55 @@ input:focus {
   justify-content: flex-start;
 }
 
+.helper-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.helper-box,
+.review-panel {
+  border: 1px solid #d8ccbd;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fffdf8;
+}
+
+.helper-actions {
+  margin-top: 12px;
+  justify-content: flex-start;
+}
+
+.stuck-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.review-panel {
+  margin-top: 16px;
+}
+
+.stuck-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.stuck-item {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f7f3ec;
+  padding: 12px;
+}
+
+.stuck-item strong {
+  display: block;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
 .api-block {
   margin-top: 16px;
 }
@@ -458,6 +507,8 @@ input:focus {
   .practice-grid,
   .conversation-layout,
   .free-talk-layout,
+  .helper-grid,
+  .stuck-row,
   .mistake-list {
     grid-template-columns: 1fr;
   }
@@ -477,6 +528,10 @@ input:focus {
   .voice-bars {
     grid-column: 1 / -1;
     justify-content: flex-start;
+  }
+
+  .stuck-list {
+    grid-template-columns: 1fr;
   }
 
   .app-shell {
